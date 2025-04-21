@@ -1,6 +1,6 @@
 import express from "express";
 import connectDB from "./config/db.js";
-import frontendRoutes from "./routes/frontend.js";
+// import frontendRoutes from "./routes/frontend.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
 import eventRoutes from "./routes/event.js";
@@ -20,7 +20,7 @@ app.use(cookieParser());
 connectDB();
 
 // Routes
-app.use("/", frontendRoutes);
+// app.use("/", frontendRoutes);
 app.use("/api/v1", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/events", eventRoutes);

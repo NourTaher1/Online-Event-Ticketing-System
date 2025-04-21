@@ -19,6 +19,22 @@ export const createEvent = async (req, res) => {
   }
 };
 
+export const getApprovedEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ status: 'upcoming' }).populate("organizer", "name email");
+    
+    res.status(200).json(events);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ message: "Validation Error", errors });
+    }
+
+    res.status(500).json({ message: "Error getting events", error: error.message });
+  }
+};
+
+
 export const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find().populate("organizer", "name email");
