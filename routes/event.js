@@ -12,7 +12,7 @@ import auth from "../middlewares/auth.js";
 const router = express.Router();
 
 router.get("/", auth(["user"]),  getApprovedEvents);
-router.get("/all", getAllEvents);
+router.get("/all" ,auth(["admin"]), getAllEvents);
 router.get("/:id", getEventById);
 router.post("/", auth(["organizer"]), createEvent);
 router.put("/:id", auth(["organizer", "admin"]), updateEventById);
