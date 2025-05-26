@@ -1,1 +1,0 @@
-# Online-Event-Ticketing-System

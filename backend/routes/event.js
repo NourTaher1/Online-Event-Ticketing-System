@@ -1,18 +1,18 @@
 import express from "express";
 import {
   createEvent,
-  getApprovedEvents,
   getAllEvents,
   getEventById,
   updateEventById,
   deleteEventById,
+  getMyEvents,
 } from "../controllers/event.js";
 import auth from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get("/", auth(["user"]),  getApprovedEvents);
-router.get("/all" ,auth(["admin"]), getAllEvents);
+router.get("/", getAllEvents);
+router.get("/my-events", auth(), getMyEvents);
 router.get("/:id", getEventById);
 router.post("/", auth(["organizer"]), createEvent);
 router.put("/:id", auth(["organizer", "admin"]), updateEventById);

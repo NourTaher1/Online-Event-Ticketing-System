@@ -14,20 +14,23 @@ const generateToken = (id, role) => {
 
 const cookieOptions = {
   httpOnly: true,
-  sameSite: "strict",
-  maxAge: 3 * 24 * 60 * 60, // 3 days in sec.
+  secure: false, // Set to true in production with HTTPS
+  sameSite: 'lax',
+  maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days in milliseconds
+  path: '/'
 };
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    console.log(req.body);
+    const { name, email, password, role } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const newUser = await User.create({ name, email, password });
+    const newUser = await User.create({ name, email, password, role });
 
     sendEmail({
       to: email,
@@ -107,12 +110,15 @@ export const forgetPassword = async (req, res) => {
 
 export const logoutUser = (req, res) => {
   try {
+    // Clear the JWT cookie
     res.setHeader(
       "Set-Cookie",
       cookie.serialize("jwt", "", {
         httpOnly: true,
-        sameSite: "strict",
-        expires: new Date(0),
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax',
+        path: '/',
+        expires: new Date(0)
       })
     );
 
@@ -239,5 +245,17 @@ export const deleteUserById = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting user", error });
+  }
+};
+
+export const verifyUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };

@@ -19,22 +19,6 @@ export const createEvent = async (req, res) => {
   }
 };
 
-export const getApprovedEvents = async (req, res) => {
-  try {
-    const events = await Event.find({ status: 'upcoming' }).populate("organizer", "name email");
-    
-    res.status(200).json(events);
-  } catch (error) {
-    if (error.name === "ValidationError") {
-      const errors = Object.values(error.errors).map((err) => err.message);
-      return res.status(400).json({ message: "Validation Error", errors });
-    }
-
-    res.status(500).json({ message: "Error getting events", error: error.message });
-  }
-};
-
-
 export const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find().populate("organizer", "name email");
@@ -48,6 +32,22 @@ export const getAllEvents = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error getting events", error: error.message });
+  }
+};
+
+export const getMyEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ organizer: req.user.id }).populate("organizer", "name email");
+    res.status(200).json(events);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ message: "Validation Error", errors });
+    }
+
+    res
+      .status(500)
+      .json({ message: "Error getting your events", error: error.message });
   }
 };
 
@@ -85,10 +85,6 @@ export const updateEventById = async (req, res) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
     res.status(200).json({ message: "Event updated", event });
   } catch (error) {
-    if (error.name === "ValidationError") {
-      const errors = Object.values(error.errors).map((err) => err.message);
-      return res.status(400).json({ message: "Validation Error", errors });
-    }
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => err.message);
       return res.status(400).json({ message: "Validation Error", errors });
