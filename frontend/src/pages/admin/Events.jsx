@@ -1,78 +1,29 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
-  Button,
   Box,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActions,
+  Button,
+  Chip,
   CircularProgress,
   Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip,
+  Grid,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  Block as BlockIcon,
-  CheckCircle as CheckCircleIcon,
-} from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import axios from 'axios';
-
-// Demo data for testing
-const demoEvents = [
-  {
-    _id: '1',
-    title: 'Summer Music Festival 2024',
-    organizer: 'John Doe',
-    date: '2024-07-15T10:00:00',
-    location: 'Central Park, New York',
-    category: 'Music',
-    status: 'active',
-    totalTickets: 1000,
-    soldTickets: 750,
-    revenue: 149992.50,
-  },
-  {
-    _id: '2',
-    title: 'Tech Conference 2024',
-    organizer: 'Jane Smith',
-    date: '2024-06-20T09:00:00',
-    location: 'Convention Center, San Francisco',
-    category: 'Technology',
-    status: 'active',
-    totalTickets: 500,
-    soldTickets: 300,
-    revenue: 89997.00,
-  },
-  {
-    _id: '3',
-    title: 'Food & Wine Festival',
-    organizer: 'Bob Johnson',
-    date: '2024-08-05T11:00:00',
-    location: 'Downtown District, Chicago',
-    category: 'Food & Drink',
-    status: 'blocked',
-    totalTickets: 800,
-    soldTickets: 400,
-    revenue: 59998.00,
-  },
-];
+import { useNavigate } from 'react-router-dom';
 
 const Events = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState(demoEvents);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -83,7 +34,7 @@ const Events = () => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/admin/events');
+        const response = await axios.get('/api/v1/events');
         if (response.data && Array.isArray(response.data)) {
           setEvents(response.data);
         }
@@ -91,14 +42,11 @@ const Events = () => {
       } catch (err) {
         setError('Failed to fetch events. Please try again later.');
         console.error('Error fetching events:', err);
-        // Keep demo data on error
       } finally {
         setLoading(false);
       }
     };
-
-    // Uncomment to enable API integration
-    // fetchEvents();
+    fetchEvents();
   }, []);
 
   const handleDeleteClick = (event) => {
@@ -108,10 +56,9 @@ const Events = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedEvent) return;
-
     try {
       setDeleting(true);
-      await axios.delete(`/api/admin/events/${selectedEvent._id}`);
+      await axios.delete(`/api/v1/events/${selectedEvent._id}`);
       setEvents(events.filter(event => event._id !== selectedEvent._id));
       setDeleteDialogOpen(false);
       setSelectedEvent(null);
@@ -119,18 +66,6 @@ const Events = () => {
       setError(err.response?.data?.message || 'Failed to delete event');
     } finally {
       setDeleting(false);
-    }
-  };
-
-  const handleStatusToggle = async (event) => {
-    try {
-      const newStatus = event.status === 'active' ? 'blocked' : 'active';
-      await axios.patch(`/api/admin/events/${event._id}/status`, { status: newStatus });
-      setEvents(events.map(e => 
-        e._id === event._id ? { ...e, status: newStatus } : e
-      ));
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update event status');
     }
   };
 
@@ -144,13 +79,6 @@ const Events = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -162,90 +90,44 @@ const Events = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4">
-          Event Management
-        </Typography>
+        <Typography variant="h4">Event Management</Typography>
       </Box>
-
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
+        <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
       )}
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Organizer</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Tickets</TableCell>
-              <TableCell>Revenue</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {events.map((event) => (
-              <TableRow key={event._id}>
-                <TableCell>{event.title}</TableCell>
-                <TableCell>{event.organizer}</TableCell>
-                <TableCell>{formatDate(event.date)}</TableCell>
-                <TableCell>{event.location}</TableCell>
-                <TableCell>
+      <Grid container spacing={3}>
+        {events.map((event) => (
+          <Grid item xs={12} sm={6} md={4} key={event._id}>
+            <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <CardMedia
+                component="img"
+                height="180"
+                image={event.images && event.images.length > 0 ? event.images[0] : '/img/defaultEvent1.png'}
+                alt={event.title}
+              />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" gutterBottom>{event.title}</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {event.description}
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
                   <Chip label={event.category} size="small" />
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {event.status === 'active' ? (
-                      <CheckCircleIcon color="success" fontSize="small" />
-                    ) : (
-                      <BlockIcon color="error" fontSize="small" />
-                    )}
-                    {event.status}
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  {event.soldTickets} / {event.totalTickets}
-                </TableCell>
-                <TableCell>{formatCurrency(event.revenue)}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    onClick={() => navigate(`/events/${event._id}`)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => navigate(`/my-events/${event._id}/edit`)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleStatusToggle(event)}
-                    color={event.status === 'active' ? 'error' : 'success'}
-                  >
-                    {event.status === 'active' ? <BlockIcon /> : <CheckCircleIcon />}
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => handleDeleteClick(event)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
+                  <Chip label={event.status} size="small" color={event.status === 'upcoming' ? 'success' : event.status === 'completed' ? 'primary' : event.status === 'cancelled' ? 'error' : 'default'} />
+                </Box>
+                <Typography variant="body2"><b>Date:</b> {formatDate(event.date)}</Typography>
+                <Typography variant="body2"><b>Location:</b> {event.location}</Typography>
+                <Typography variant="body2"><b>Price:</b> ${event.ticketPrice}</Typography>
+                <Typography variant="body2"><b>Tickets:</b> {event.remainingTickets} / {event.totalTickets}</Typography>
+                <Typography variant="body2"><b>Organizer:</b> {event.organizer?.name || event.organizer}</Typography>
+              </CardContent>
+              <CardActions>
+                <Button size="small" onClick={() => navigate(`/admin/events/${event._id}/edit`)} startIcon={<EditIcon />}>Edit</Button>
+                <Button size="small" color="error" onClick={() => handleDeleteClick(event)} startIcon={<DeleteIcon />}>Delete</Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -284,4 +166,4 @@ const Events = () => {
   );
 };
 
-export default Events; 
+export default Events;

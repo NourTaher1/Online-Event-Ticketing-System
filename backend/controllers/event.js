@@ -73,7 +73,7 @@ export const getEventById = async (req, res) => {
 
 export const updateEventById = async (req, res) => {
   try {
-    if (req.body.status && !req.user.isAdmin) {
+    if (req.body.status && req.user && req.user.role !== 'admin') {
       return res.status(403).json({ message: "Only admins can update the status" });
     }
 

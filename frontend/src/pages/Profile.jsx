@@ -84,6 +84,11 @@ const Profile = () => {
     },
   });
 
+  // Show only organizer events, user bookings, or nothing for admin
+  const isOrganizer = user?.role === 'organizer';
+  const isUser = user?.role === 'user';
+  const isAdmin = user?.role === 'admin';
+
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
@@ -109,48 +114,52 @@ const Profile = () => {
         </Box>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper
-              sx={{
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                cursor: 'pointer',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-              onClick={() => navigate('/my-events')}
-            >
-              <Event sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h6">My Events</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage your events
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper
-              sx={{
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                cursor: 'pointer',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-              onClick={() => navigate('/bookings')}
-            >
-              <ConfirmationNumber sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h6">My Bookings</Typography>
-              <Typography variant="body2" color="text.secondary">
-                View your bookings
-              </Typography>
-            </Paper>
-          </Grid>
+          {isOrganizer && (
+            <Grid item xs={12}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                  },
+                }}
+                onClick={() => navigate('/my-events')}
+              >
+                <Event sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
+                <Typography variant="h6">My Events</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Manage your events
+                </Typography>
+              </Paper>
+            </Grid>
+          )}
+          {isUser && (
+            <Grid item xs={12}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                  },
+                }}
+                onClick={() => navigate('/bookings')}
+              >
+                <ConfirmationNumber sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
+                <Typography variant="h6">My Bookings</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  View your bookings
+                </Typography>
+              </Paper>
+            </Grid>
+          )}
         </Grid>
 
         <Divider sx={{ my: 4 }} />
@@ -275,4 +284,4 @@ const Profile = () => {
   );
 };
 
-export default Profile; 
+export default Profile;

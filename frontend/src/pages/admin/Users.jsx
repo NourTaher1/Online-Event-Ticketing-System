@@ -20,54 +20,28 @@ import {
   DialogActions,
 } from '@mui/material';
 import {
-  Edit as EditIcon,
   Delete as DeleteIcon,
   Block as BlockIcon,
   CheckCircle as CheckCircleIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-
-// Demo data for testing
-const demoUsers = [
-  {
-    _id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'user',
-    status: 'active',
-    createdAt: '2024-03-01T10:00:00',
-  },
-  {
-    _id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'admin',
-    status: 'active',
-    createdAt: '2024-03-02T11:00:00',
-  },
-  {
-    _id: '3',
-    name: 'Bob Johnson',
-    email: 'bob@example.com',
-    role: 'user',
-    status: 'blocked',
-    createdAt: '2024-03-03T12:00:00',
-  },
-];
+import { useNavigate } from 'react-router-dom';
 
 const Users = () => {
-  const [users, setUsers] = useState(demoUsers);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/admin/users');
+        const response = await axios.get('/api/v1/users');
         if (response.data && Array.isArray(response.data)) {
           setUsers(response.data);
         }
@@ -81,8 +55,7 @@ const Users = () => {
       }
     };
 
-    // Uncomment to enable API integration
-    // fetchUsers();
+    fetchUsers(); // Enable API integration
   }, []);
 
   const handleDeleteClick = (user) => {
@@ -95,7 +68,7 @@ const Users = () => {
 
     try {
       setDeleting(true);
-      await axios.delete(`/api/admin/users/${selectedUser._id}`);
+      await axios.delete(`/api/v1/users/${selectedUser._id}`);
       setUsers(users.filter(user => user._id !== selectedUser._id));
       setDeleteDialogOpen(false);
       setSelectedUser(null);
@@ -103,18 +76,6 @@ const Users = () => {
       setError(err.response?.data?.message || 'Failed to delete user');
     } finally {
       setDeleting(false);
-    }
-  };
-
-  const handleStatusToggle = async (user) => {
-    try {
-      const newStatus = user.status === 'active' ? 'blocked' : 'active';
-      await axios.patch(`/api/admin/users/${user._id}/status`, { status: newStatus });
-      setUsers(users.map(u => 
-        u._id === user._id ? { ...u, status: newStatus } : u
-      ));
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update user status');
     }
   };
 
@@ -152,38 +113,41 @@ const Users = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Avatar</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>Verified</TableCell>
               <TableCell>Created At</TableCell>
+              <TableCell>Updated At</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {users.map((user) => (
               <TableRow key={user._id}>
+                <TableCell>
+                  <img src={user.avatar} alt={user.name} style={{ width: 40, height: 40, borderRadius: '50%' }} />
+                </TableCell>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {user.status === 'active' ? (
-                      <CheckCircleIcon color="success" fontSize="small" />
-                    ) : (
-                      <BlockIcon color="error" fontSize="small" />
-                    )}
-                    {user.status}
-                  </Box>
+                  {user.isVerified ? (
+                    <CheckCircleIcon color="success" fontSize="small" titleAccess="Verified" />
+                  ) : (
+                    <BlockIcon color="error" fontSize="small" titleAccess="Not Verified" />
+                  )}
                 </TableCell>
                 <TableCell>{formatDate(user.createdAt)}</TableCell>
+                <TableCell>{formatDate(user.updatedAt)}</TableCell>
                 <TableCell align="right">
                   <IconButton
                     size="small"
-                    onClick={() => handleStatusToggle(user)}
-                    color={user.status === 'active' ? 'error' : 'success'}
+                    color="primary"
+                    onClick={() => navigate(`/admin/users/${user._id}/edit`)}
                   >
-                    {user.status === 'active' ? <BlockIcon /> : <CheckCircleIcon />}
+                    <EditIcon />
                   </IconButton>
                   <IconButton
                     size="small"
@@ -237,4 +201,4 @@ const Users = () => {
   );
 };
 
-export default Users; 
+export default Users;

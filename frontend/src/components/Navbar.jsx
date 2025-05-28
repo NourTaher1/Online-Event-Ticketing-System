@@ -17,7 +17,6 @@ import {
   Menu as MenuIcon,
   AccountCircle,
   Event as EventIcon,
-  Dashboard as DashboardIcon,
 } from '@mui/icons-material';
 
 const Navbar = () => {
@@ -97,6 +96,7 @@ const Navbar = () => {
               My Events
             </MenuItem>
           )}
+          {/* Only show admin dashboard links if admin */}
           {isAdmin && (
             <>
               <MenuItem component={Link} to="/admin/events" onClick={handleClose}>
@@ -142,6 +142,7 @@ const Navbar = () => {
               My Events
             </MenuItem>
           )}
+          {/* Only show admin dashboard links if admin */}
           {isAdmin && (
             <>
               <MenuItem component={Link} to="/admin/events" onClick={handleClose}>
@@ -201,26 +202,7 @@ const Navbar = () => {
           </>
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {user && isOrganizer && (
-              <Button
-                color="inherit"
-                component={Link}
-                to="/my-events"
-                startIcon={<DashboardIcon />}
-              >
-                My Events
-              </Button>
-            )}
-            {user && isAdmin && (
-              <Button
-                color="inherit"
-                component={Link}
-                to="/admin/events"
-                startIcon={<DashboardIcon />}
-              >
-                Admin Dashboard
-              </Button>
-            )}
+            {/* Removed My Events and Admin Dashboard from top-level navbar */}
             {renderAuthButtons()}
           </Box>
         )}
@@ -229,4 +211,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

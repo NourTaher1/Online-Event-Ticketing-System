@@ -32,11 +32,11 @@ export const registerUser = async (req, res) => {
 
     const newUser = await User.create({ name, email, password, role });
 
-    sendEmail({
-      to: email,
-      subject: "Verify your email",
-      text: `Please verify your email by clicking the link below.\n http://${secrets.HOST}:${secrets.PORT}/api/v1/verifyemail/${newUser._id}`,
-    });
+    // sendEmail({
+    //   to: email,
+    //   subject: "Verify your email",
+    //   text: `Please verify your email by clicking the link below.\n http://${secrets.HOST}:${secrets.PORT}/api/v1/verifyemail/${newUser._id}`,
+    // });
 
     const token = generateToken(newUser.id, newUser.role);
     res.setHeader("Set-Cookie", cookie.serialize("jwt", token, cookieOptions));

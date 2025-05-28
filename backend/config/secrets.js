@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const secrets = {
-  MONGODB_URI: process.env.db_url,
+  MONGODB_URI: process.env.MONGODB_URI,
   MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
   PORT: process.env.PORT,
   HOST: process.env.HOST,

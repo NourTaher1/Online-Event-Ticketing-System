@@ -25,6 +25,7 @@ import {
   Card,
   CardContent,
   Divider,
+  TextField,
 } from '@mui/material';
 import {
   Cancel as CancelIcon,
@@ -35,81 +36,34 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 
-// Demo data for testing
-const demoBookings = [
-  {
-    _id: '1',
-    event: {
-      _id: '1',
-      title: 'Summer Music Festival 2024',
-      date: '2024-07-15T10:00:00',
-      location: 'Central Park, New York',
-      imageUrl: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&auto=format&fit=crop',
-    },
-    quantity: 2,
-    totalPrice: 399.98,
-    status: 'confirmed',
-    bookingDate: '2024-03-15T14:30:00',
-  },
-  {
-    _id: '2',
-    event: {
-      _id: '2',
-      title: 'Tech Conference 2024',
-      date: '2024-06-20T09:00:00',
-      location: 'Convention Center, San Francisco',
-      imageUrl: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&auto=format&fit=crop',
-    },
-    quantity: 1,
-    totalPrice: 299.99,
-    status: 'pending',
-    bookingDate: '2024-03-16T10:15:00',
-  },
-  {
-    _id: '3',
-    event: {
-      _id: '3',
-      title: 'Food & Wine Festival',
-      date: '2024-08-05T11:00:00',
-      location: 'Downtown District, Chicago',
-      imageUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop',
-    },
-    quantity: 4,
-    totalPrice: 599.96,
-    status: 'cancelled',
-    bookingDate: '2024-03-14T16:45:00',
-  },
-];
-
 const UserBookings = () => {
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState(demoBookings); // Initialize with demo data
+  const [bookings, setBookings] = useState([]); // Start with empty array
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/bookings');
-        if (response.data && Array.isArray(response.data)) {
-          setBookings(response.data);
-        }
-        setError('');
-      } catch (err) {
-        setError('Failed to fetch bookings. Please try again later.');
-        console.error('Error fetching bookings:', err);
-        // Keep demo data on error
-      } finally {
-        setLoading(false);
+  // Fetch bookings from API
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/v1/users/bookings', { withCredentials: true });
+      if (response.data && Array.isArray(response.data)) {
+        setBookings(response.data);
       }
-    };
+      setError('');
+    } catch (err) {
+      setError('Failed to fetch bookings. Please try again later.');
+      console.error('Error fetching bookings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Uncomment to enable API integration
-    // fetchBookings();
+  useEffect(() => {
+    fetchBookings();
   }, []);
 
   const handleCancelClick = (booking) => {
@@ -119,11 +73,10 @@ const UserBookings = () => {
 
   const handleCancelConfirm = async () => {
     if (!selectedBooking) return;
-
     try {
       setCancelling(true);
       await axios.put(
-        `/api/bookings/${selectedBooking._id}/cancel`,
+        `/api/v1/bookings/${selectedBooking._id}/cancel`,
         {},
         { withCredentials: true }
       );
@@ -255,12 +208,22 @@ const UserBookings = () => {
                         <Typography variant="body2" color="text.secondary">
                           Booked on {formatDate(booking.bookingDate)}
                         </Typography>
-                        <Button
-                          variant="outlined"
-                          onClick={() => navigate(`/events/${booking.event._id}`)}
-                        >
-                          View Event
-                        </Button>
+                        <Box>
+                          <Button
+                            variant="outlined"
+                            onClick={() => navigate(`/events/${booking.event._id}`)}
+                            sx={{ mr: 1 }}
+                          >
+                            View Event
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setSelectedBooking(booking)}
+                          >
+                            Checkout
+                          </Button>
+                        </Box>
                       </Box>
                     </Grid>
                   </Grid>
@@ -305,8 +268,32 @@ const UserBookings = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={Boolean(selectedBooking)}
+        onClose={() => setSelectedBooking(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Enter Card Details</DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>Checkout for <strong>{selectedBooking?.event.title}</strong></Typography>
+          <TextField label="Card Number" fullWidth margin="normal" inputProps={{ maxLength: 19 }} />
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField label="MM/YY" margin="normal" inputProps={{ maxLength: 5 }} />
+            <TextField label="CVC" margin="normal" inputProps={{ maxLength: 4 }} />
+          </Box>
+          <TextField label="Cardholder Name" fullWidth margin="normal" />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedBooking(null)} color="secondary">Cancel</Button>
+          <Button onClick={() => setSelectedBooking(null)} variant="contained" color="primary">
+            Pay
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
 
-export default UserBookings; 
+export default UserBookings;

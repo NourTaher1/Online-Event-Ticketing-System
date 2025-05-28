@@ -122,13 +122,6 @@ const EventCard = ({ event, onDelete, showActions = false }) => {
           />
         </Box>
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            size="small"
-            color="primary"
-            onClick={() => navigate(`/events/${event._id}`)}
-          >
-            View Details
-          </Button>
           {showActions && (
             <>
               <Button
@@ -138,13 +131,6 @@ const EventCard = ({ event, onDelete, showActions = false }) => {
               >
                 Edit
               </Button>
-              <Button
-                size="small"
-                color="primary"
-                onClick={() => navigate(`/my-events/${event._id}/analytics`)}
-              >
-                Analytics
-              </Button>
             </>
           )}
         </Box>
@@ -153,4 +139,4 @@ const EventCard = ({ event, onDelete, showActions = false }) => {
   );
 };
 
-export default EventCard; 
+export default EventCard;
